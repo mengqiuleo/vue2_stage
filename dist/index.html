@@ -1,0 +1,39 @@
+<!--
+ * @Author: Pan Jingyi
+ * @Date: 2022-10-04 14:52:34
+ * @LastEditTime: 2022-10-04 19:26:46
+-->
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta http-equiv="X-UA-Compatible" content="IE=edge">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Document</title>
+</head>
+<body>
+  <div id="app">
+    <div>{{ name }}</div>
+    <span>{{ age }}</span>
+  </div>
+  <script src="vue.js"></script>
+  <script>
+    //响应式的数据变化，数据变化了可以监控到
+    //数据的取值 和 更改值我们要监控到
+    const vm = new Vue({
+      data: { //代理数据
+        name: 'zf',
+        age: 20,
+        address: {
+          num: 30,
+          content: '回龙观'
+        },
+        hobby: ['eat', 'drink']
+      },
+      el: '#app' //将数据解析到el元素上
+    })
+
+    console.log(vm)
+  </script>
+</body>
+</html>
