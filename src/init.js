@@ -1,10 +1,11 @@
 /*
  * @Author: Pan Jingyi
  * @Date: 2022-10-04 15:16:44
- * @LastEditTime: 2022-10-04 19:55:48
+ * @LastEditTime: 2022-10-05 10:40:37
  */
 import { initState } from './state'
 import { compileToFunction } from './compiler/index'
+import { mountComponent } from './lifecycle'
 
 export function initMixin(Vue) { //就是给Vue增加init方法的
   Vue.prototype._init = function(options){ //用于初始化话操作
@@ -38,15 +39,17 @@ export function initMixin(Vue) { //就是给Vue增加init方法的
         }
       }
       //写了template，就用写了的template
-      if(template){
+      if(template && el){
         //这里需要对模板进行编译
         const render = compileToFunction(template); //根据template生成一个render函数
         ops.render = render; //挂载render属性
       }
     }
 
+    mountComponent(vm, el); //组件的挂载
     //有render就直接获取，我们最终都是要拿到一个render函数
-    ops.render; //最终就可以获取render方法
+    ops.render; //最终就可以获取render方法 -> 获取：vm.$options.render
+    // 后续每次数据更新可以只执行render函数无需调用ast转换的过程
   }
 }
 

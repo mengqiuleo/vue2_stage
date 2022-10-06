@@ -1,12 +1,21 @@
 import { newArrayProto } from "./array"
+import Dep from "./dep"
 
 /*
  * @Author: Pan Jingyi
  * @Date: 2022-10-04 15:33:12
- * @LastEditTime: 2022-10-04 19:24:10
+ * @LastEditTime: 2022-10-05 23:29:30
  */
 class Observer{
   constructor(data){
+    //给数组本身增加dep,如果数组新增了某一项，就要触发dep更新
+    //给对象增加dep，如果后序用户增加了属性，也要触发dep更新
+
+    //要给每个对象都增加收集功能
+    this.dep = new Dep()
+
+
+
     //Object.defineProperty只能劫持已经存在的属性（vue里面会为此单独写一些api $set $delete）
     
     Object.defineProperty(data, '__ob__', {
@@ -51,10 +60,34 @@ class Observer{
   }
 }
 
+function dependArray(value){
+  for(let i=0; i < value.length; i++){
+    let current = value[i];
+    current.__ob__ && current.__ob__.dep.depend();
+    if(Array.isArray(current)){
+      dependArray(current)
+    }
+  }
+}
+
+// 数据劫持
+// 执行get时会进行dep和watcher的收集，在执行set时，让dep更新
 export function defineReactive(target, key, value){
-  observe(value); //递归进行：如果属性是对象那就继续进行代理
+  let childOb = observe(value); //递归进行：如果属性是对象那就继续进行代理
+  //childOb中就有一个dep属性 用来收集依赖
+  let dep = new Dep(); //每一个属性都增加一个dep 
   Object.defineProperty(target, key, {
     get(){ //取值的时候 执行get
+      if(Dep.target){
+        dep.depend(); //让这个属性的收集器记住当前的watcher
+        if(childOb){
+          childOb.dep.depend();//让数组和对象本身也实现依赖收集
+
+          if(Array.isArray(value)){
+            dependArray(value)
+          }
+        }
+      }
       return value
     },
     set(newValue){ //修改的时候，会执行set
@@ -62,6 +95,7 @@ export function defineReactive(target, key, value){
         if(newValue === value) return
         observe(value); //递归进行：如果设置的值还是对象那就继续进行代理
         value = newValue
+        dep.notify(); //更新dep,通知watcher进行更新
       }
     }
   })

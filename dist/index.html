@@ -1,7 +1,7 @@
 <!--
  * @Author: Pan Jingyi
  * @Date: 2022-10-04 14:52:34
- * @LastEditTime: 2022-10-04 19:26:46
+ * @LastEditTime: 2022-10-06 18:39:30
 -->
 <!DOCTYPE html>
 <html lang="en">
@@ -12,9 +12,8 @@
   <title>Document</title>
 </head>
 <body>
-  <div id="app">
-    <div>{{ name }}</div>
-    <span>{{ age }}</span>
+  <div id="app" style="color:aqua; background: yellow">
+    <div style="color: red">{{ firstname }}</div>
   </div>
   <script src="vue.js"></script>
   <script>
@@ -22,18 +21,35 @@
     //数据的取值 和 更改值我们要监控到
     const vm = new Vue({
       data: { //代理数据
-        name: 'zf',
-        age: 20,
-        address: {
-          num: 30,
-          content: '回龙观'
-        },
-        hobby: ['eat', 'drink']
+        firstname: '珠',
+        lastname: '峰'
       },
-      el: '#app' //将数据解析到el元素上
+      el: '#app', //将数据解析到el元素上
+      computed: {
+        fullname(){
+          return this.firstname + this.lastname;
+        }
+      }
     })
 
-    console.log(vm)
+    // setTimeout(() => {
+    //   vm.name = 'jw';
+    //   vm.age = 30
+    //   vm.name = 'zs'
+    // },1000)
+
+    // vm.name = 'ls'
+    // // nextTick不是创建了一个异步任务，而是将这个任务维护到了队列中而已
+    // vm.$nextTick(() => {
+    //   console.log(app.innerHTML)
+    // })
+
+    // vm.arr[0] = 100;
+    // vm.arr.length = 100; //这两种方式都不能监控到数组变化
+    // vm.arr[3].a = 100; //注意：这里改变的不是arr属性，而是一个arr数组的对象
+
+    //计算属性
+
   </script>
 </body>
 </html>

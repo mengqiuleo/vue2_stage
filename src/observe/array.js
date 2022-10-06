@@ -1,7 +1,7 @@
 /*
  * @Author: Pan Jingyi
  * @Date: 2022-10-04 17:45:37
- * @LastEditTime: 2022-10-04 18:10:33
+ * @LastEditTime: 2022-10-05 23:23:41
  */
 // 重写数组中的部分方法
 
@@ -51,6 +51,7 @@ methods.forEach(method => {
       ob.observeArray(inserted);
     }
 
+    ob.dep.notify() //数组变化，通知对应的watcher进行更新
     return result
   }
 })
