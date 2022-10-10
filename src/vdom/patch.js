@@ -3,7 +3,7 @@ import { isSameVNode } from "./index";
 /*
  * @Author: Pan Jingyi
  * @Date: 2022-10-06 14:52:15
- * @LastEditTime: 2022-10-06 18:14:36
+ * @LastEditTime: 2022-10-10 11:14:35
  */
 export function createElm(vnode){
   let { tag, data, children, text } = vnode;
@@ -13,7 +13,7 @@ export function createElm(vnode){
     children.forEach(child => {
       vnode.el.appendChild(createElm(child))
     });
-  } else{
+  } else{ //如果是文本
     vnode.el = document.createTextNode(text)
   }
   return vnode.el

@@ -387,13 +387,14 @@
   /*
    * @Author: Pan Jingyi
    * @Date: 2022-10-04 17:45:37
-   * @LastEditTime: 2022-10-05 23:23:41
+   * @LastEditTime: 2022-10-10 08:46:22
    */
   // 重写数组中的部分方法
   var oldArrayProto = Array.prototype; //获取数组的原型
 
-  var newArrayProto = Object.create(oldArrayProto);
-  var methods = [//找到所有变异方法
+  var newArrayProto = Object.create(oldArrayProto); //这里就实现了保留数组原有的方法
+
+  var methods = [//找到所有变异方法(这些方法会修改原数组)
   'push', 'pop', 'shift', 'unshift', 'reverse', 'sort', 'splice']; //concat slice 都不会改变原数组
 
   methods.forEach(function (method) {
@@ -425,9 +426,8 @@
         case 'splice':
           //arr.splice(0,1,{a:1})
           inserted = args.slice(2);
-      }
+      } // console.log('新增的数组的数据：',inserted);
 
-      console.log('新增的数组的数据：', inserted);
 
       if (inserted) {
         //对新增的内容再次进行观测
@@ -652,6 +652,8 @@
 
       this.lazy ? undefined : this.get(); //初次渲染先调用一次： 使 vm._update(vm._render()) 执行
       //但是首先要判断是否是计算属性，如果不是，就是初次渲染先调用一次
+
+      this.vm = vm;
     }
 
     _createClass(Watcher, [{
@@ -668,14 +670,23 @@
         }
       }
     }, {
+      key: "evaluate",
+      value: function evaluate() {
+        this.value = this.get(); //获取到用户函数的返回值，并且还要标识为脏
+
+        this.dirty = false;
+      }
+    }, {
       key: "get",
       value: function get() {
         pushTarget(this); //在执行watcher之前，将当前dep增加一个当前watcher，这样我们就将当前dep和watcher连接起来了
         //当我们创建渲染watcher的时候，我们会把当前的渲染watcher放到Dep.target上
 
-        this.getter(); //会去vm上取值，此时就调用了vm._update(vm._render())，当调用该render函数时，我们就会走到数据劫持的get()上
+        var value = this.getter.call(this.vm); //会去vm上取值，此时就调用了vm._update(vm._render())，当调用该render函数时，我们就会走到数据劫持的get()上
 
-        popTarget(); //当当前组件渲染完毕后，我们就将target清空
+        popTarget(); //当当前组件渲染完毕后，我们就弹出当前watcher
+
+        return value;
       }
     }, {
       key: "update",
@@ -780,7 +791,7 @@
   /*
    * @Author: Pan Jingyi
    * @Date: 2022-10-04 15:28:08
-   * @LastEditTime: 2022-10-06 19:17:22
+   * @LastEditTime: 2022-10-10 20:16:21
    */
   function initState(vm) {
     var opts = vm.$options; //获取所有选项
@@ -818,8 +829,8 @@
 
     observe(data); //将 vm._data 用 vm 来代理
 
-    for (var _key in data) {
-      proxy(vm, '_data', _key);
+    for (var key in data) {
+      proxy(vm, '_data', key);
     }
   }
   /**
@@ -834,29 +845,31 @@
     var watchers = vm._computedWatchers = {}; //将计算属性watcher保存到vm上
     // console.log(computed)
 
-    for (var _key2 in computed) {
-      var userDef = computed[_key2]; //我们需要监控 计算属性中get的变化
+    for (var key in computed) {
+      var userDef = computed[key]; //拿到每一个计算属性
+      //我们需要监控 计算属性中get的变化
 
-      var fn = typeof userDef === 'function' ? userDef : userDef.get; //如果直接 new Watcher 默认就会执行fn, 将属性和watcher对应起来
+      var fn = typeof userDef === 'function' ? userDef : userDef.get; //如果直接 new Watcher 默认就会执行fn, 
+      // key是那个计算属性，我们让这个计算属性记住自己的watcher
 
-      watchers[_key2] = new Watcher(vm, fn, {
+      watchers[key] = new Watcher(vm, fn, {
         lazy: true
       }); //lazy:true: 如果不取值，就不用执行watcher
       //将getter和setter进行数据劫持
 
-      defineComputed(vm, _key2, userDef);
+      defineComputed(vm, key, userDef); //key是那个计算属性
     }
   }
 
-  function defineComputed(target, ket, userDef) {
+  function defineComputed(target, key, userDef) {
     //拿到对应的getter和setter
-    var getter = typeof userDef === 'function' ? userDef : userDef.get;
+    typeof userDef === 'function' ? userDef : userDef.get;
 
     var setter = userDef.set || function () {}; //可以通过实例拿到setter和getter属性
 
 
     Object.defineProperty(target, key, {
-      get: createComputedGetter(getter, key),
+      get: createComputedGetter(key),
       set: setter
     });
   }
@@ -864,7 +877,14 @@
   function createComputedGetter(key) {
     //我们需要监测是否要执行这个getter
     return function () {
-      this._computedWatchers[key]; //获取到对应属性的watcher
+      var watcher = this._computedWatchers[key]; //获取到对应属性的watcher
+
+      if (watcher.dirty) {
+        //如果是脏的就去执行 用户传入的函数
+        watcher.evaluate();
+      }
+
+      return watcher.value;
     };
   }
 
@@ -921,7 +941,7 @@
   /*
    * @Author: Pan Jingyi
    * @Date: 2022-10-06 14:52:15
-   * @LastEditTime: 2022-10-06 18:14:36
+   * @LastEditTime: 2022-10-10 11:14:35
    */
 
   function createElm(vnode) {
@@ -940,6 +960,7 @@
         vnode.el.appendChild(createElm(child));
       });
     } else {
+      //如果是文本
       vnode.el = document.createTextNode(text);
     }
 
@@ -1203,14 +1224,14 @@
       vm._update(vm._render());
     };
 
-    new Watcher(vm, updatedComponent, true); //true用于表示是一个渲染watcher
+    new Watcher(vm, updatedComponent, true); //true用于表示是一个渲染watcher，因为还有计算属性的watcher
     // 3.插入到el元素中
   }
 
   /*
    * @Author: Pan Jingyi
    * @Date: 2022-10-04 15:16:44
-   * @LastEditTime: 2022-10-05 10:40:37
+   * @LastEditTime: 2022-10-10 09:33:20
    */
   function initMixin(Vue) {
     //就是给Vue增加init方法的
@@ -1242,11 +1263,12 @@
           //没有写模板，但是写了 el
           template = el.outerHTML;
         } else {
-          //如果有模板
+          //如果没模板
           if (el) {
+            //如果有el,采用模板的内容
             template = ops.template;
           }
-        } //写了template，就用写了的template
+        } //现在有了template，就用写了的template
 
 
         if (template && el) {
@@ -1268,7 +1290,7 @@
   /*
    * @Author: Pan Jingyi
    * @Date: 2022-10-04 14:36:30
-   * @LastEditTime: 2022-10-06 17:32:13
+   * @LastEditTime: 2022-10-10 20:50:30
    */
 
   function Vue(options) {
@@ -1292,7 +1314,7 @@
   var prevVNode = render1.call(vm1);
   var el = createElm(prevVNode);
   document.body.appendChild(el);
-  var render2 = compileToFunction("<li key='a' a='1' style='color:red'>\n  <li key='d'>d</li>\n  <li key='a'>a</li>\n  <li key='b'>b</li>\n  <li key='c'>c</li>\n</li>");
+  var render2 = compileToFunction("<ul key='a' a='1' style='color:red'>\n  <li key='d'>d</li>\n  <li key='a'>a</li>\n  <li key='b'>b</li>\n  <li key='c'>c</li>\n</ul>");
   var vm2 = new Vue({
     data: {
       name: 'zf'
@@ -1301,7 +1323,9 @@
   var nextVNode = render2.call(vm2);
   console.log(prevVNode, nextVNode);
   setTimeout(function () {
-    patch(prevVNode, nextVNode); // let newEl = createEle(nextVNode)
+    patch(prevVNode, nextVNode); //patch中实现diff算法
+    //原来的做法：直接将新的节点替换掉老的
+    // let newEl = createEle(nextVNode)
     // el.parentNode.replaceChild(newEl, el)
   }, 1000);
 

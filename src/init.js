@@ -1,7 +1,7 @@
 /*
  * @Author: Pan Jingyi
  * @Date: 2022-10-04 15:16:44
- * @LastEditTime: 2022-10-05 10:40:37
+ * @LastEditTime: 2022-10-10 09:33:20
  */
 import { initState } from './state'
 import { compileToFunction } from './compiler/index'
@@ -33,12 +33,12 @@ export function initMixin(Vue) { //就是给Vue增加init方法的
       let template; //没有render查看是否写了template，没有写template就用外部的template
       if(!ops.template && el) { //没有写模板，但是写了 el
         template = el.outerHTML;
-      }else { //如果有模板
-        if(el) {
+      }else { //如果没模板
+        if(el) { //如果有el,采用模板的内容
           template = ops.template;
         }
       }
-      //写了template，就用写了的template
+      //现在有了template，就用写了的template
       if(template && el){
         //这里需要对模板进行编译
         const render = compileToFunction(template); //根据template生成一个render函数

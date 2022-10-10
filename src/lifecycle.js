@@ -1,7 +1,7 @@
 /*
  * @Author: Pan Jingyi
  * @Date: 2022-10-05 10:12:49
- * @LastEditTime: 2022-10-06 14:54:12
+ * @LastEditTime: 2022-10-10 14:46:51
  */
 import Watcher from './observe/watcher';
 import { createElementVNode, createTextVNode } from './vdom/index'
@@ -51,7 +51,7 @@ export function mountComponent(vm,el){
     vm._update(vm._render())
   }
   
-  new Watcher(vm, updatedComponent,true) //true用于表示是一个渲染watcher
+  new Watcher(vm, updatedComponent,true) //true用于表示是一个渲染watcher，因为还有计算属性的watcher
 
   // 3.插入到el元素中
 }

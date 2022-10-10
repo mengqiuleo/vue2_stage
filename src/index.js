@@ -1,7 +1,7 @@
 /*
  * @Author: Pan Jingyi
  * @Date: 2022-10-04 14:36:30
- * @LastEditTime: 2022-10-06 17:32:13
+ * @LastEditTime: 2022-10-10 20:50:30
  */
 import { compileToFunction } from './compiler/index';
 import { initMixin } from './init'
@@ -33,19 +33,20 @@ let el = createElm(prevVNode)
 document.body.appendChild(el)
 
 
-let render2 = compileToFunction(`<li key='a' a='1' style='color:red'>
+let render2 = compileToFunction(`<ul key='a' a='1' style='color:red'>
   <li key='d'>d</li>
   <li key='a'>a</li>
   <li key='b'>b</li>
   <li key='c'>c</li>
-</li>`)
+</ul>`)
 let vm2 = new Vue({data: { name: 'zf' }})
 let nextVNode = render2.call(vm2)
 
 console.log(prevVNode, nextVNode)
 
 setTimeout(() => {
-  patch(prevVNode, nextVNode)
+  patch(prevVNode, nextVNode) //patch中实现diff算法
+  //原来的做法：直接将新的节点替换掉老的
   // let newEl = createEle(nextVNode)
   // el.parentNode.replaceChild(newEl, el)
 }, 1000);

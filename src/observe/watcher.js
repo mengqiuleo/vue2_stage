@@ -1,7 +1,7 @@
 /*
  * @Author: Pan Jingyi
  * @Date: 2022-10-05 21:09:03
- * @LastEditTime: 2022-10-06 18:55:27
+ * @LastEditTime: 2022-10-10 20:17:23
  */
 /**
  * 观察者模式
@@ -32,6 +32,8 @@ class Watcher {
     this.dirty = this.dirty; //针对计算属性，看是否是脏值
     this.lazy ? undefined : this.get(); //初次渲染先调用一次： 使 vm._update(vm._render()) 执行
     //但是首先要判断是否是计算属性，如果不是，就是初次渲染先调用一次
+    
+    this.vm = vm;
   }
   addDep(dep){ //让当前watcher收集它的dep
     let id = dep.id; //拿到该dep的id
@@ -41,11 +43,16 @@ class Watcher {
       dep.addSub(this); //让dep记住watcher
     }
   }
+  evaluate(){
+    this.value = this.get(); //获取到用户函数的返回值，并且还要标识为脏
+    this.dirty = false;
+  }
   get(){
     pushTarget(this); //在执行watcher之前，将当前dep增加一个当前watcher，这样我们就将当前dep和watcher连接起来了
     //当我们创建渲染watcher的时候，我们会把当前的渲染watcher放到Dep.target上
-    this.getter(); //会去vm上取值，此时就调用了vm._update(vm._render())，当调用该render函数时，我们就会走到数据劫持的get()上
-    popTarget(); //当当前组件渲染完毕后，我们就将target清空
+    let value = this.getter.call(this.vm); //会去vm上取值，此时就调用了vm._update(vm._render())，当调用该render函数时，我们就会走到数据劫持的get()上
+    popTarget(); //当当前组件渲染完毕后，我们就弹出当前watcher
+    return value;
   }
   update(){ //我们需要实现异步更新：即多次修改值只会最终执行一次视图更新
     //实现方案：使用异步更新 -> 事件环

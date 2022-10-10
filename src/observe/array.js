@@ -1,15 +1,15 @@
 /*
  * @Author: Pan Jingyi
  * @Date: 2022-10-04 17:45:37
- * @LastEditTime: 2022-10-05 23:23:41
+ * @LastEditTime: 2022-10-10 08:46:22
  */
 // 重写数组中的部分方法
 
 let oldArrayProto = Array.prototype; //获取数组的原型
 
-export let newArrayProto = Object.create(oldArrayProto);
+export let newArrayProto = Object.create(oldArrayProto);//这里就实现了保留数组原有的方法
 
-let methods = [ //找到所有变异方法
+let methods = [ //找到所有变异方法(这些方法会修改原数组)
   'push',
   'pop',
   'shift',
@@ -40,7 +40,7 @@ methods.forEach(method => {
       default:
         break;
     }
-    console.log('新增的数组的数据：',inserted);
+    // console.log('新增的数组的数据：',inserted);
     if(inserted){ //对新增的内容再次进行观测
       //既然要对新增的数据进行观测：那么还是要调用最初监测数组的方法来对新增数据进行观测
       //那个新增的方法在Observe实例的observeArray函数，所以我们要拿到Observe实例

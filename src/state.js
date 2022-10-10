@@ -1,7 +1,7 @@
 /*
  * @Author: Pan Jingyi
  * @Date: 2022-10-04 15:28:08
- * @LastEditTime: 2022-10-06 19:17:22
+ * @LastEditTime: 2022-10-10 20:16:21
  */
 import { observe } from './observe/index'
 import Watcher, { nextTick } from './observe/watcher';
@@ -56,29 +56,30 @@ function initComputed(vm){
   const watchers = vm._computedWatchers = {} //将计算属性watcher保存到vm上
   // console.log(computed)
   for(let key in computed){
-    let userDef = computed[key];
+    let userDef = computed[key]; //拿到每一个计算属性
     
     //我们需要监控 计算属性中get的变化
     let fn = typeof userDef === 'function' ? userDef : userDef.get;
 
-    //如果直接 new Watcher 默认就会执行fn, 将属性和watcher对应起来
+    //如果直接 new Watcher 默认就会执行fn, 
+    // key是那个计算属性，我们让这个计算属性记住自己的watcher
     watchers[key] = new Watcher(vm, fn, {lazy:true}) //lazy:true: 如果不取值，就不用执行watcher
 
 
 
     //将getter和setter进行数据劫持
-    defineComputed(vm, key, userDef);
+    defineComputed(vm, key, userDef); //key是那个计算属性
 
   }
 }
-function defineComputed(target, ket, userDef){
+function defineComputed(target, key, userDef){
   //拿到对应的getter和setter
   const getter = typeof userDef === 'function' ? userDef : userDef.get;
   const setter = userDef.set || (() => {});
 
   //可以通过实例拿到setter和getter属性
   Object.defineProperty(target, key, {
-    get:createComputedGetter(getter, key),
+    get:createComputedGetter(key),
     set:setter
   })
 }
@@ -86,6 +87,11 @@ function createComputedGetter(key){
   //我们需要监测是否要执行这个getter
   return function(){
     const watcher = this._computedWatchers[key]//获取到对应属性的watcher
+    if(watcher.dirty){
+      //如果是脏的就去执行 用户传入的函数
+      watcher.evaluate()
+    }
+    return watcher.value;
   }
 }
 
