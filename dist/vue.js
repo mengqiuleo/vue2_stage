@@ -941,8 +941,9 @@
   /*
    * @Author: Pan Jingyi
    * @Date: 2022-10-06 14:52:15
-   * @LastEditTime: 2022-10-10 11:14:35
+   * @LastEditTime: 2022-10-11 09:17:14
    */
+  //创建元素
 
   function createElm(vnode) {
     var tag = vnode.tag,
@@ -1026,7 +1027,7 @@
        */
       return patchVNode(oldVNode, vnode);
     }
-  }
+  } //比较同一级的两个新旧节点
 
   function patchVNode(oldVNode, vnode) {
     //两个节点不是同一个节点，直接删除老的换上新的（没有比对了）
@@ -1074,7 +1075,8 @@
       var child = newChildren[i];
       el.appendChild(createElm(child));
     }
-  }
+  } //完整的diff算法
+
 
   function updateChildren(el, oldChildren, newChildren) {
     //diff算法只会比较同级的节点
@@ -1290,7 +1292,7 @@
   /*
    * @Author: Pan Jingyi
    * @Date: 2022-10-04 14:36:30
-   * @LastEditTime: 2022-10-10 20:50:30
+   * @LastEditTime: 2022-10-11 11:12:48
    */
 
   function Vue(options) {
@@ -1305,7 +1307,7 @@
   initStateMixin(Vue); //实现了nextTick $watcher
   // diff的测试代码
 
-  var render1 = compileToFunction("<ul key='a' a='1' style='color:red'>\n  <li key='a'>a</li>\n  <li key='b'>b</li>\n  <li key='c'>c</li>\n</ul>");
+  var render1 = compileToFunction("<ul key='a' a='1' style='color:red'>\n  <li>a</li>\n  <li>b</li>\n  <li>c</li>\n  <li>d</li>\n</ul>");
   var vm1 = new Vue({
     data: {
       name: 'zf'
@@ -1314,7 +1316,7 @@
   var prevVNode = render1.call(vm1);
   var el = createElm(prevVNode);
   document.body.appendChild(el);
-  var render2 = compileToFunction("<ul key='a' a='1' style='color:red'>\n  <li key='d'>d</li>\n  <li key='a'>a</li>\n  <li key='b'>b</li>\n  <li key='c'>c</li>\n</ul>");
+  var render2 = compileToFunction("<ul key='a' a='1' style='color:red'>\n  <li>b</li>\n  <li>m</li>\n  <li>a</li>\n  <li>p</li>\n  <li>c</li>\n  <li>q</li>\n</ul>");
   var vm2 = new Vue({
     data: {
       name: 'zf'

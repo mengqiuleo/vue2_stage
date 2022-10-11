@@ -1,7 +1,7 @@
 /*
  * @Author: Pan Jingyi
  * @Date: 2022-10-04 14:36:30
- * @LastEditTime: 2022-10-10 20:50:30
+ * @LastEditTime: 2022-10-11 11:12:48
  */
 import { compileToFunction } from './compiler/index';
 import { initMixin } from './init'
@@ -22,9 +22,10 @@ initStateMixin(Vue); //实现了nextTick $watcher
 
 // diff的测试代码
 let render1 = compileToFunction(`<ul key='a' a='1' style='color:red'>
-  <li key='a'>a</li>
-  <li key='b'>b</li>
-  <li key='c'>c</li>
+  <li>a</li>
+  <li>b</li>
+  <li>c</li>
+  <li>d</li>
 </ul>`)
 let vm1 = new Vue({data: { name: 'zf' }})
 let prevVNode = render1.call(vm1)
@@ -34,10 +35,12 @@ document.body.appendChild(el)
 
 
 let render2 = compileToFunction(`<ul key='a' a='1' style='color:red'>
-  <li key='d'>d</li>
-  <li key='a'>a</li>
-  <li key='b'>b</li>
-  <li key='c'>c</li>
+  <li>b</li>
+  <li>m</li>
+  <li>a</li>
+  <li>p</li>
+  <li>c</li>
+  <li>q</li>
 </ul>`)
 let vm2 = new Vue({data: { name: 'zf' }})
 let nextVNode = render2.call(vm2)

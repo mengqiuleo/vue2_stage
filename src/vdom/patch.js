@@ -3,8 +3,10 @@ import { isSameVNode } from "./index";
 /*
  * @Author: Pan Jingyi
  * @Date: 2022-10-06 14:52:15
- * @LastEditTime: 2022-10-10 11:14:35
+ * @LastEditTime: 2022-10-11 09:17:14
  */
+
+//创建元素
 export function createElm(vnode){
   let { tag, data, children, text } = vnode;
   if(typeof tag === 'string'){ //如果是标签
@@ -70,6 +72,7 @@ export function patch(oldVNode, vnode){
   }
 }
 
+//比较同一级的两个新旧节点
 function patchVNode(oldVNode, vnode){
   //两个节点不是同一个节点，直接删除老的换上新的（没有比对了）
   if(!isSameVNode(oldVNode, vnode)){ //tag===tag && key===key
@@ -112,6 +115,7 @@ function mountChildren(el, newChildren){
   }
 }
 
+//完整的diff算法
 function updateChildren(el, oldChildren, newChildren){
   //diff算法只会比较同级的节点
   // vue2采用双指针的算法 ：头指针和尾指针
@@ -129,9 +133,7 @@ function updateChildren(el, oldChildren, newChildren){
 
   //针对乱序比对 -> 制作一个映射表
   function makeIndexByKey(children){
-    let map = {
-    
-    };
+    let map = {};
     children.forEach((child,index) => {
       map[child.key] = index;
     })
