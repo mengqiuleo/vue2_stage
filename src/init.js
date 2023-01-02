@@ -1,18 +1,20 @@
 /*
  * @Author: Pan Jingyi
  * @Date: 2022-10-04 15:16:44
- * @LastEditTime: 2022-10-10 09:33:20
+ * @LastEditTime: 2023-01-03 03:48:06
  */
 import { initState } from './state'
 import { compileToFunction } from './compiler/index'
 import { mountComponent } from './lifecycle'
+import { mergeOptions } from './utils';
 
 export function initMixin(Vue) { //就是给Vue增加init方法的
   Vue.prototype._init = function(options){ //用于初始化话操作
     // vm.$options 就是获取用户的配置
 
     const vm = this;
-    vm.$options = options; //将用户的选项挂载到实例上
+    //vm.$options = options; //将用户的选项挂载到实例上
+    vm.$options = mergeOptions(this.constructor.options, options) //实现mixin功能
 
     //初始化状态：就是挂载属性，方法，计算属性...
     initState(vm);

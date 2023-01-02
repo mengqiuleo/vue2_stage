@@ -1,11 +1,13 @@
 /*
  * @Author: Pan Jingyi
  * @Date: 2022-10-04 14:36:30
- * @LastEditTime: 2022-10-11 11:12:48
+ * @LastEditTime: 2023-01-03 03:46:03
  */
 import { compileToFunction } from './compiler/index';
+import { initGlobalAPI } from './gloablAPI';
 import { initMixin } from './init'
 import { initLifeCycle } from './lifecycle'
+import { nextTick } from './observe/watcher';
 import { initStateMixin } from './state'
 import { createElm, patch } from './vdom/patch';
 
@@ -15,12 +17,18 @@ function Vue(options) { //options就是用户的选项
   this._init(options)
 }
 
-
+Vue.prototype.$nextTick = nextTick
 initMixin(Vue); //扩展了init方法
 initLifeCycle(Vue); //vm_update vm._render
 initStateMixin(Vue); //实现了nextTick $watcher
 
-// diff的测试代码
+initGlobalAPI(Vue)
+
+
+
+
+
+// ---------------diff的测试代码------------------
 let render1 = compileToFunction(`<ul key='a' a='1' style='color:red'>
   <li>a</li>
   <li>b</li>

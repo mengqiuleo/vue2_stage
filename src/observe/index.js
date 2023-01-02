@@ -4,7 +4,7 @@ import Dep from "./dep"
 /*
  * @Author: Pan Jingyi
  * @Date: 2022-10-04 15:33:12
- * @LastEditTime: 2022-10-05 23:29:30
+ * @LastEditTime: 2023-01-03 02:20:08
  */
 class Observer{
   constructor(data){
@@ -60,6 +60,7 @@ class Observer{
   }
 }
 
+// 如果get取值是数组，就进行依赖收集(这里就是对数组中的数组再次进行依赖收集)
 function dependArray(value){
   for(let i=0; i < value.length; i++){
     let current = value[i];
@@ -83,7 +84,7 @@ export function defineReactive(target, key, value){
         if(childOb){
           childOb.dep.depend();//让数组和对象本身也实现依赖收集
 
-          if(Array.isArray(value)){
+          if(Array.isArray(value)){ //处理数组中的数组
             dependArray(value)
           }
         }
